@@ -8,7 +8,10 @@ app.post("/users", (req, res) => {
   res.json(user);
 });
 app.get("/users/:id", (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
+  const user = users.find(u => u.id === parseInt(req.params.id));
+  if (user === undefined) {
+    return res.status(404).json({ error: "User not found" });
+  }
   res.json(user);
 });
 app.get("/users", (req, res) => {
