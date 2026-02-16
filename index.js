@@ -8,8 +8,12 @@ app.post("/users", (req, res) => {
   res.json(user);
 });
 app.get("/users/:id", (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
-  res.json(user);
+  const user = users.find(u => u.id === parseInt(req.params.id, 10));
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({error: "User not found"});
+  }
 });
 app.get("/users", (req, res) => {
   const page = req.query.page || 1;
@@ -19,7 +23,7 @@ app.get("/users", (req, res) => {
   res.json({ users: result, total: users.length, page: page });
 });
 app.delete("/users/:id", (req, res) => {
-  const idx = users.findIndex(u => u.id === req.params.id);
+  const idx = users.findIndex(u => u.id === parseInt(req.params.id, 10));
   if (idx !== -1) users.splice(idx, 1);
   res.json({ deleted: true });
 });
