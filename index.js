@@ -13,6 +13,9 @@ app.get("/users/:id", (req, res) => {
     return res.status(400).json({ error: "Invalid user ID" });
   }
   const user = users.find(u => u.id === id);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
   res.json(user);
 });
 app.get("/users", (req, res) => {

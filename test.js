@@ -53,12 +53,12 @@ async function runTests() {
   assert.strictEqual(deleteResponse.status, 200);
   assert.strictEqual(deleteResponse.body.deleted, true);
   
-  // Verify user was deleted (undefined becomes empty response)
+  // Verify user was deleted (should return 404)
   const getAfterDeleteResponse = await request(app)
     .get(`/users/${userId}`);
   
-  assert.strictEqual(getAfterDeleteResponse.status, 200);
-  assert.strictEqual(getAfterDeleteResponse.text, "");
+  assert.strictEqual(getAfterDeleteResponse.status, 404);
+  assert.strictEqual(getAfterDeleteResponse.body.error, "User not found");
   console.log("✓ DELETE /users/:id works correctly");
   
   // Test invalid ID handling
