@@ -5,6 +5,25 @@ const app = require("./index.js");
 async function runTests() {
   console.log("Running tests...");
 
+  // Regression test: GET /users/:id should handle string route params
+  // Bug: Express route params are always strings, but user.id is a number.
+  // Without parseInt, comparing number === string returns false.
+  console.log("Regression test: GET /users/:id handles string route parameter");
+  
+  const regCreateResponse = await request(app)
+    .post("/users")
+    .send({ name: "Regression User", email: "regression@test.com" });
+  const regUserId = regCreateResponse.body.id;
+  
+  // Explicitly pass string "1" to simulate Express route param behavior
+  const regGetResponse = await request(app)
+    .get("/users/1");
+  
+  assert.strictEqual(regGetResponse.status, 200);
+  assert.strictEqual(regGetResponse.body.name, "Regression User");
+  assert.strictEqual(regGetResponse.body.id, regUserId);
+  console.log("✓ Regression test: string route param handled correctly");
+  
   // Test: GET and DELETE /users/:id should work with numeric IDs
   console.log("Test: GET /users/:id returns correct user");
   
