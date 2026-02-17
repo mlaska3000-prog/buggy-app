@@ -8,8 +8,13 @@ app.post("/users", (req, res) => {
   res.json(user);
 });
 app.get("/users/:id", (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
-  res.json(user);
+  const userId = parseInt(req.params.id);
+  const user = users.find(u => u.id === userId);
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
 });
 app.get("/users", (req, res) => {
   const page = req.query.page || 1;
@@ -19,9 +24,14 @@ app.get("/users", (req, res) => {
   res.json({ users: result, total: users.length, page: page });
 });
 app.delete("/users/:id", (req, res) => {
-  const idx = users.findIndex(u => u.id === req.params.id);
-  if (idx !== -1) users.splice(idx, 1);
-  res.json({ deleted: true });
+  const userId = parseInt(req.params.id);
+  const idx = users.findIndex(u => u.id === userId);
+  if (idx !== -1) {
+    users.splice(idx, 1);
+    res.json({ deleted: true });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
 });
 module.exports = app;
 if (require.main === module) app.listen(3000);
