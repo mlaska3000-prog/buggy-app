@@ -19,8 +19,12 @@ app.get("/users", (req, res) => {
   res.json({ users: result, total: users.length, page: page });
 });
 app.delete("/users/:id", (req, res) => {
-  const idx = users.findIndex(u => u.id === req.params.id);
-  if (idx !== -1) users.splice(idx, 1);
+  const id = parseInt(req.params.id);
+  const idx = users.findIndex(u => u.id === id);
+  if (idx === -1) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  users.splice(idx, 1);
   res.json({ deleted: true });
 });
 module.exports = app;
