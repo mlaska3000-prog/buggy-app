@@ -1,73 +1,79 @@
 const assert = require("assert");
+const http = require("http");
 
-console.log("Running tests...");
+const app = require("./index.js");
 
-// Test the specific bug scenario: string vs number ID comparison
-function testUserIdTypeConversion() {
-  // This test would have caught the original bug where req.params.id (string) 
-  // was compared with user.id (number) using strict equality
-  
-  // Simulate the scenario: users array with numeric IDs
-  const users = [
-    { id: 1, name: "Test User", email: "test@example.com" }
-  ];
-  
-  // Simulate req.params.id (always a string in Express)
-  const stringId = "1";
-  
-  // Test the fixed logic: convert string to number before comparison
-  const numericId = parseInt(stringId, 10);
-  const foundUser = users.find(u => u.id === numericId);
-  
-  assert.strictEqual(foundUser.id, 1, "Should find user with ID 1 after string-to-number conversion");
-  assert.strictEqual(foundUser.name, "Test User", "Should return correct user name");
-  
-  // Test the original broken logic would fail
-  const brokenFoundUser = users.find(u => u.id === stringId);
-  assert.strictEqual(brokenFoundUser, undefined, "Original broken logic should not find user (number !== string)");
-  
-  console.log("✓ User ID type conversion test passed");
+// Helper to make HTTP requests
+function request(method, path, body = null) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: "localhost",
+      port: 3000,
+      path: path,
+      method: method,
+      headers: { "Content-Type": "application/json" }
+    };
+    
+    const req = http.request(options, (res) => {
+      let data = "";
+      res.on("data", chunk => data += chunk);
+      res.on("end", () => {
+        try {
+          resolve({ status: res.statusCode, body: data ? JSON.parse(data) : null });
+        } catch (e) {
+          resolve({ status: res.statusCode, body: data });
+        }
+      });
+    });
+    
+    req.on("error", reject);
+    if (body) req.write(JSON.stringify(body));
+    req.end();
+  });
 }
 
-function testInvalidIdHandling() {
-  // Test that invalid IDs are handled gracefully
-  const invalidId = "abc";
-  const parsedId = parseInt(invalidId, 10);
+async function runTests() {
+  // Start server for testing
+  const server = app.listen(3001);
   
-  assert.strictEqual(isNaN(parsedId), true, "Should detect invalid ID as NaN");
-  
-  console.log("✓ Invalid ID handling test passed");
+  try {
+    // Create a test user
+    const createRes = await request("POST", "/users", { name: "Test User", email: "test@example.com" });
+    assert.strictEqual(createRes.status, 200, "User creation should succeed");
+    const userId = createRes.body.id;
+    console.log(`Created user with id: ${userId}`);
+    
+    // Regression test: GET /users/:id with numeric id
+    // Bug was: req.params.id is string "1", but user.id is number 1
+    // So 1 === "1" returns false, causing undefined
+    const getRes = await request("GET", `/users/${userId}`);
+    assert.strictEqual(getRes.status, 200, "GET should return 200");
+    assert.strictEqual(getRes.body.id, userId, "GET should return the correct user");
+    assert.strictEqual(getRes.body.name, "Test User", "GET should return correct user data");
+    console.log("REGRESSION TEST: GET /users/:id returns user object - PASSED");
+    
+    // Test invalid ID returns 400
+    const invalidRes = await request("GET", "/users/invalid");
+    assert.strictEqual(invalidRes.status, 400, "Invalid ID should return 400");
+    console.log("REGRESSION TEST: Invalid ID returns 400 - PASSED");
+    
+    // Regression test: DELETE /users/:id 
+    const deleteRes = await request("DELETE", `/users/${userId}`);
+    assert.strictEqual(deleteRes.status, 200, "DELETE should return 200");
+    console.log("REGRESSION TEST: DELETE /users/:id works - PASSED");
+    
+    // Verify user was deleted
+    const afterDelete = await request("GET", `/users/${userId}`);
+    assert.strictEqual(afterDelete.body, null, "User should be deleted");
+    console.log("REGRESSION TEST: User actually deleted - PASSED");
+    
+    console.log("\nAll regression tests passed!");
+  } finally {
+    server.close();
+  }
 }
 
-function testDeleteIdTypeConversion() {
-  // Test the same fix applies to DELETE endpoint
-  const users = [
-    { id: 1, name: "Test User", email: "test@example.com" },
-    { id: 2, name: "Other User", email: "other@example.com" }
-  ];
-  
-  const stringId = "1";
-  const numericId = parseInt(stringId, 10);
-  
-  // Test finding index for deletion with converted ID
-  const idx = users.findIndex(u => u.id === numericId);
-  assert.strictEqual(idx, 0, "Should find correct index for deletion after string-to-number conversion");
-  
-  // Test original broken logic would fail
-  const brokenIdx = users.findIndex(u => u.id === stringId);
-  assert.strictEqual(brokenIdx, -1, "Original broken logic should not find user for deletion");
-  
-  console.log("✓ DELETE ID type conversion test passed");
-}
-
-// Run the tests
-try {
-  testUserIdTypeConversion();
-  testInvalidIdHandling();
-  testDeleteIdTypeConversion();
-  console.log("All tests passed!");
-  process.exit(0);
-} catch (error) {
-  console.error("Test failed:", error.message);
+runTests().catch(err => {
+  console.error("Tests failed:", err);
   process.exit(1);
-}
+});
