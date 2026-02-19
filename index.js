@@ -23,5 +23,10 @@ app.delete("/users/:id", (req, res) => {
   if (idx !== -1) users.splice(idx, 1);
   res.json({ deleted: true });
 });
+
+app.get("/version", (req, res) => {
+  res.json({ version: "1.0.0", node: process.version });
+});
+
 module.exports = app;
 if (require.main === module) app.listen(3000);
