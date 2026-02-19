@@ -23,5 +23,14 @@ app.delete("/users/:id", (req, res) => {
   if (idx !== -1) users.splice(idx, 1);
   res.json({ deleted: true });
 });
+
+app.get("/ping", (req, res) => {
+  res.json({ pong: true, timestamp: Date.now() });
+});
+
+app.get("/stats", (req, res) => {
+  res.json({ users: users.length, uptime: process.uptime() });
+});
+
 module.exports = app;
 if (require.main === module) app.listen(3000);
