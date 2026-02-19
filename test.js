@@ -30,7 +30,7 @@ function testPing() {
 const server = app.listen(0, () => {
   const port = server.address().port;
   let testsCompleted = 0;
-  const totalTests = 2;
+  const totalTests = 3;
   
   function checkComplete() {
     testsCompleted++;
@@ -75,6 +75,30 @@ const server = app.listen(0, () => {
         console.log("✓ GET /time returns HTTP 200");
         console.log("✓ GET /time returns iso field (ISO 8601 format)");
         console.log("✓ GET /time returns epoch field (positive number)");
+        checkComplete();
+      } catch (e) {
+        console.error("Test failed:", e.message);
+        server.close();
+        process.exit(1);
+      }
+    });
+  });
+  
+  // Test GET /health
+  http.get(`http://127.0.0.1:${port}/health`, (res) => {
+    let data = "";
+    res.on("data", (chunk) => data += chunk);
+    res.on("end", () => {
+      try {
+        const json = JSON.parse(data);
+        assert.strictEqual(res.statusCode, 200, "Status should be 200");
+        assert.strictEqual(json.status, "ok", "Response status field should equal 'ok'");
+        assert.ok(typeof json.uptime === "number" && json.uptime > 0, "uptime should be a positive number");
+        assert.ok(typeof json.memory === "number" && json.memory > 0, "memory should be a positive number");
+        console.log("✓ GET /health returns HTTP 200");
+        console.log("✓ GET /health response status field equals 'ok'");
+        console.log("✓ GET /health response uptime is a positive number");
+        console.log("✓ GET /health response memory is a positive number");
         checkComplete();
       } catch (e) {
         console.error("Test failed:", e.message);

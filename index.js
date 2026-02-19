@@ -9,6 +9,10 @@ app.get("/ping", (req, res) => {
 app.get("/time", (req, res) => {
   res.json({ iso: new Date().toISOString(), epoch: Date.now() });
 });
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime(), memory: process.memoryUsage().heapUsed });
+});
 app.post("/users", (req, res) => {
   const user = { id: users.length + 1, name: req.body.name, email: req.body.email };
   users.push(user);
