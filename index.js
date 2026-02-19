@@ -1,6 +1,12 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime() });
+});
+
 const users = [];
 app.post("/users", (req, res) => {
   const user = { id: users.length + 1, name: req.body.name, email: req.body.email };
