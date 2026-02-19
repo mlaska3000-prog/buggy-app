@@ -1,1 +1,1 @@
-{"name":"buggy-app","version":"1.0.0","scripts":{"start":"node index.js","test":"node test.js"},"dependencies":{"express":"^4.17.1"}}
+{"name":"buggy-app","version":"1.0.0","scripts":{"start":"node index.js","test":"mocha"},"dependencies":{"express":"^4.17.1"},"devDependencies":{"mocha":"^11.7.5","supertest":"^7.2.2"}}
