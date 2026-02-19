@@ -2,6 +2,9 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const users = [];
+app.get("/ping", (req, res) => {
+  res.json({ pong: true });
+});
 app.post("/users", (req, res) => {
   const user = { id: users.length + 1, name: req.body.name, email: req.body.email };
   users.push(user);
