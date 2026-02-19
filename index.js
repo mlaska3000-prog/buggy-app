@@ -2,6 +2,17 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const users = [];
+app.get("/ping", (req, res) => {
+  res.json({ pong: true });
+});
+
+app.get("/time", (req, res) => {
+  res.json({ iso: new Date().toISOString(), epoch: Date.now() });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime(), memory: process.memoryUsage().heapUsed });
+});
 app.post("/users", (req, res) => {
   const user = { id: users.length + 1, name: req.body.name, email: req.body.email };
   users.push(user);
