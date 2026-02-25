@@ -12,11 +12,10 @@ app.get("/users/:id", (req, res) => {
   res.json(user);
 });
 app.get("/users", (req, res) => {
-  const page = req.query.page || 1;
-  const perPage = req.query.perPage || 10;
-  const start = (page - 1) * perPage;
-  const result = users.slice(start, start + perPage);
-  res.json({ users: result, total: users.length, page: page });
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = parseInt(req.query.offset) || 0;
+  const result = users.slice(offset, offset + limit);
+  res.json({ users: result, total: users.length, limit, offset });
 });
 app.delete("/users/:id", (req, res) => {
   const idx = users.findIndex(u => u.id === req.params.id);
