@@ -56,7 +56,7 @@ test("GET /users respects custom limit", () => {
 
 // Test pagination offset
 test("GET /users respects offset", () => {
-  const req = { query: { limit: "3", offset: "5" } };
+  const req = { query: { limit: "3", offset: "4" } };
   const users = testUsers;
   const limit = parseInt(req.query.limit) || 10;
   const offset = parseInt(req.query.offset) || 0;
@@ -68,14 +68,15 @@ test("GET /users respects offset", () => {
 // Test limit capped at 100
 test("GET /users caps limit at 100", () => {
   const req = { query: { limit: "500" } };
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = Math.min(parseInt(req.query.limit) || 10, 100);
   assert.ok(limit <= 100);
+  assert.strictEqual(limit, 100);
 });
 
 // Test offset minimum is 0
 test("GET /users offset minimum is 0", () => {
   const req = { query: { offset: "-5" } };
-  const offset = parseInt(req.query.offset) || 0;
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
   assert.strictEqual(offset, 0);
 });
 

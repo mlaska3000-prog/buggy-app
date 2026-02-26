@@ -12,8 +12,8 @@ app.get("/users/:id", (req, res) => {
   res.json(user);
 });
 app.get("/users", (req, res) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = parseInt(req.query.offset) || 0;
+  const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
   const result = users.slice(offset, offset + limit);
   res.json({ users: result, total: users.length, limit, offset });
 });
