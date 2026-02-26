@@ -55,9 +55,7 @@ app.get("/users", (req, res) => {
   let offset = parseInt(req.query.offset, 10) || 0;
   offset = Math.max(0, offset);
   
-  // Convert 1-based offset to 0-based array index
-  const arrayOffset = offset > 0 ? offset - 1 : 0;
-  const result = users.slice(arrayOffset, arrayOffset + limit);
+  const result = users.slice(offset, offset + limit);
   res.json({ users: result, total: users.length, limit, offset });
 });
 
