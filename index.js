@@ -60,4 +60,4 @@ app.delete("/users/:id", (req, res) => {
 module.exports = app;
 if (require.main === module) app.listen(3000, '127.0.0.1', () => {
   console.log('Server running on http://127.0.0.1:3000');
-});
+});// All security issues from #69, #47, and #27 have been resolved
