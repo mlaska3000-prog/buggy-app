@@ -12,11 +12,11 @@ app.get("/users/:id", (req, res) => {
   res.json(user);
 });
 app.get("/users", (req, res) => {
-  const page = req.query.page || 1;
-  const perPage = req.query.perPage || 10;
+  const page = parseInt(req.query.page) || 1;
+  const perPage = Math.min(parseInt(req.query.perPage) || 10, 100); // Cap at 100
   const start = (page - 1) * perPage;
   const result = users.slice(start, start + perPage);
-  res.json({ users: result, total: users.length, page: page });
+  res.json({ users: result, total: users.length, page: page, perPage: perPage });
 });
 app.delete("/users/:id", (req, res) => {
   const idx = users.findIndex(u => u.id === req.params.id);
